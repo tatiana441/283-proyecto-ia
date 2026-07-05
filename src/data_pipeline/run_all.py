@@ -19,6 +19,8 @@ def main() -> None:
 
     print("=== 1/5 INGESTA ===")
     crudos = ingest.ingest_all(offline=offline)
+    if "cum" not in crudos or "vitales" not in crudos:
+        raise SystemExit("[run_all] ABORTADO: sin datos de CUM o Vitales (ni API ni fallback)")
 
     print("\n=== 2/5 LIMPIEZA CUM ===")
     tablas_cum = clean_cum.run(crudos["cum"])

@@ -1,0 +1,27 @@
+name: Actualización semanal de datos abiertos
+
+on:
+  schedule:
+    - cron: "0 8 * * 1"   # lunes 3:00 a.m. hora Colombia (8:00 UTC)
+  workflow_dispatch:       # permite dispararlo manualmente desde GitHub
+
+jobs:
+  reingesta:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+      - name: Pipeline completo (SODA en vivo -> limpieza -> integracion -> Supabase)
+        # El parquet SISMED no está en el repo: la tabla precios_mensuales
+        # existente se conserva (histórico estático 2017-2019)
+        run: python -m src.data_pipeline.run_all
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Recalcular scores de riesgo
+        run: python -m src.inference
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

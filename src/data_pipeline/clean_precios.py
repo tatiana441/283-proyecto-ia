@@ -10,6 +10,8 @@
    consecutivo para cruzar con el catálogo CUM.
 """
 
+from pathlib import Path
+
 import pandas as pd
 
 from src.common import DATA_EXTERNAL, DATA_PROCESSED, REPO_ROOT, load_config
@@ -30,10 +32,20 @@ def _arreglar_mojibake(serie: pd.Series) -> pd.Series:
     return serie.map(fix)
 
 
-def limpiar_sismed(parquet_dir=None) -> pd.DataFrame:
-    """Lee el parquet compactado, limpia y agrega a Mes × ExpedienteCum × TipoReporte."""
+def limpiar_sismed(parquet_dir=None) -> pd.DataFrame | None:
+    """Lee el parquet compactado, limpia y agrega a Mes × ExpedienteCum × TipoReporte.
+
+    Si el parquet no está disponible (p. ej. en CI/cron: es un archivo local de
+    230 MB que no viaja al repo), devuelve None y la tabla existente en Supabase
+    se conserva — el histórico SISMED es estático (2017-2019).
+    """
     if parquet_dir is None:
         parquet_dir = REPO_ROOT / load_config()["sismed"]["parquet_dir"]
+
+    parquet_dir = Path(parquet_dir)
+    if not parquet_dir.exists() or not any(parquet_dir.glob("*.parquet")):
+        print(f"[clean_precios] SISMED: parquet no disponible en {parquet_dir}; se omite (tabla existente se conserva)")
+        return None
 
     df = pd.read_parquet(parquet_dir)
     print(f"[clean_precios] SISMED crudo: {len(df):,} filas")

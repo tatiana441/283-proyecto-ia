@@ -2,6 +2,19 @@
 
 Registro cronológico de versiones y cambios.
 
+## [0.4.0] — 2026-07-05 · Día 4
+
+### Agregado
+- **Despliegue**: `deployments/docker/Dockerfile.api`, `frontend/Dockerfile` (build estático con args VITE_*), `.dockerignore` y guía paso a paso `docs/despliegue.md` (GitHub + Railway).
+- **Automatización**: workflow `data-update-cron.yml` — re-ingesta semanal (lunes 3 a.m. Colombia) + recálculo de scores, con `workflow_dispatch` manual.
+- **Documentación del jurado completa**: conclusiones, evaluación de impacto/ética, guía de validación para pares, architecture.md + diagrama PNG, `api_spec.json` (OpenAPI exportado), **informe_tecnico.pdf** y **manual_usuario.pdf**.
+- **Notebooks 01/03/04/05** reproducibles (EDA, descriptivo, modelo con backtest, reportes automáticos).
+- **RECURSOS/**: `Presentacion.pptx` (12 diapositivas con notas de orador) y `portada.png`.
+
+### Corregido
+- **Puente de integración**: ahora emite una fila por **cada variante CUM** del principio activo matcheado — productos enlazados a su score: 534 → **628** (la búsqueda de lidocaína ahora muestra el score 89,7).
+- **Pipeline cron-safe**: DDL por tabla (solo se recrean las tablas con datos en la corrida), `chat_logs` y `risk_scores` nunca se tumban, SISMED se omite con gracia si el parquet no está (CI/cron).
+
 ## [0.3.0] — 2026-07-05 · Día 3
 
 ### Agregado

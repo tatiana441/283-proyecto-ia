@@ -65,25 +65,30 @@ def componentes_pa(nombre_limpio: str) -> list[str]:
     return [p.strip() for p in partes if p and len(p.strip()) > 3]
 
 
-def _indice_cum(nombres_cum: list[str]) -> dict[str, str]:
-    """Índice {variante_limpia -> nombre_cum_normalizado}: nombre completo limpio + cada componente."""
-    indice: dict[str, str] = {}
+def _indice_cum(nombres_cum: list[str]) -> dict[str, set[str]]:
+    """Índice {variante_limpia -> TODOS los nombres CUM normalizados que le corresponden}.
+
+    Un mismo principio activo aparece en el CUM con múltiples redacciones
+    ("LIDOCAINA CLORHIDRATO", "LIDOCAINA CLORHIDRATO (EQUIVALENTE A ...)");
+    el puente debe cubrirlas todas para que cada producto encuentre su score.
+    """
+    indice: dict[str, set[str]] = {}
     for n in nombres_cum:
         nn = normalize_text(n)
         limpio = limpiar_nombre_pa(n)
         if not nn or not limpio:
             continue
-        indice.setdefault(limpio, nn)
+        indice.setdefault(limpio, set()).add(nn)
         for comp in componentes_pa(limpio):
-            indice.setdefault(comp, nn)
+            indice.setdefault(comp, set()).add(nn)
     return indice
 
 
 def match_principios_activos(nombres_vitales: list[str], nombres_cum: list[str]) -> pd.DataFrame:
-    """Cascada exacto -> fuzzy -> por componente (combos) -> sin match. Devuelve la tabla puente.
+    """Cascada exacto -> fuzzy -> por componente (combos) -> sin match.
 
-    Tanto Vitales como CUM pasan por limpiar_nombre_pa (sin concentraciones ni
-    paréntesis); las combinaciones se intentan también por su primer componente.
+    Devuelve la tabla puente con UNA FILA POR VARIANTE CUM del nombre matcheado,
+    de modo que el join SQL cubra todas las redacciones del principio activo.
     """
     indice = _indice_cum(nombres_cum)
     universo = list(indice.keys())
@@ -103,10 +108,10 @@ def match_principios_activos(nombres_vitales: list[str], nombres_cum: list[str])
         if not nv or not limpio:
             continue
 
-        cum_name, metodo, score = buscar(limpio)
+        variantes, metodo, score = buscar(limpio)
         if metodo is None:
             for comp in componentes_pa(limpio):
-                cum_name, metodo, score = buscar(comp)
+                variantes, metodo, score = buscar(comp)
                 if metodo is not None:
                     metodo = f"{metodo}_componente"
                     break
@@ -114,9 +119,10 @@ def match_principios_activos(nombres_vitales: list[str], nombres_cum: list[str])
         if metodo is None:
             filas.append({"nombre_vitales": nv, "nombre_cum": None, "metodo": "sin_match", "score": None})
         else:
-            filas.append({"nombre_vitales": nv, "nombre_cum": cum_name, "metodo": metodo, "score": score})
+            for variante in sorted(variantes):
+                filas.append({"nombre_vitales": nv, "nombre_cum": variante, "metodo": metodo, "score": score})
 
-    return pd.DataFrame(filas).drop_duplicates(subset=["nombre_vitales"])
+    return pd.DataFrame(filas).drop_duplicates(subset=["nombre_vitales", "nombre_cum"])
 
 
 def run(vitales_base: pd.DataFrame, principios_cum: pd.DataFrame) -> pd.DataFrame:
@@ -130,9 +136,10 @@ def run(vitales_base: pd.DataFrame, principios_cum: pd.DataFrame) -> pd.DataFram
 
     puente = match_principios_activos(pa_vitales, pa_cum)
 
-    # Métricas por nombre único y ponderadas por nº de solicitudes
-    total = len(puente)
-    por_metodo = puente["metodo"].value_counts().to_dict()
+    # Métricas por nombre único (el puente ahora trae varias variantes CUM por PA)
+    unicos = puente.drop_duplicates(subset=["nombre_vitales"])
+    total = len(unicos)
+    por_metodo = unicos["metodo"].value_counts().to_dict()
     vitales_norm = vitales_base["principio_activo_1"].map(normalize_text)
     con_match = set(puente.loc[puente["metodo"] != "sin_match", "nombre_vitales"])
     filas_cruzan = vitales_norm.isin(con_match).mean()

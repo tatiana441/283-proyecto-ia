@@ -1,0 +1,15 @@
+data/
+notebooks/
+reports/
+docs/
+RECURSOS/
+tests/
+frontend/node_modules/
+frontend/dist/
+.git/
+.github/
+__pycache__/
+*.pyc
+.env*
+!.env.example
+models/predictive/

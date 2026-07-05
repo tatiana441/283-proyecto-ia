@@ -27,25 +27,35 @@ Datasets externos: no aplica.
 
 ## Variables seleccionadas
 
-Ver [docs/diccionario_datos.md](docs/diccionario_datos.md) *(día 2)*.
+20 variables documentadas en [docs/diccionario_datos.md](docs/diccionario_datos.md).
 
 ## Tipo de análisis
 
-Predictivo (clasificación) + descriptivo. **Modelo:** score compuesto interpretable 0–100 + regresión logística de validación con backtest temporal *(día 2)*.
+Predictivo (clasificación) + descriptivo. **Modelo:** score compuesto interpretable 0–100 (pesos documentados en [config/risk_model_params.yaml](config/risk_model_params.yaml)) + **regresión logística** de validación con backtest temporal.
 
 ## Resultados clave
 
-- Integración CUM↔Vitales sin llave directa (IUM 100% vacío): match por principio activo normalizado en cascada exacto → fuzzy (rapidfuzz ≥ 90). Métricas en [reports/metricas_integracion.json](reports/metricas_integracion.json).
-- Métricas del modelo (AUC, precision@20): *(día 2)*.
+- **AUC promedio 0,787 · precision@20 = 0,988** en backtest temporal de 4 cortes ([models/predictive/metrics.json](models/predictive/metrics.json); matriz de confusión y ROC en [reports/figures/](reports/figures/)).
+- **591 principios activos con score** de riesgo (155 en nivel alto/crítico al corte 2026-04); el riesgo se concentra en medicamentos huérfanos y en esenciales como la lidocaína (89,7).
+- Integración sin llave directa (IUM 100% vacío): cascada exacto → fuzzy → componentes cubre 27,5% de los PAs y 32,4% de las solicitudes ([reports/metricas_integracion.json](reports/metricas_integracion.json)); el "sin match" restante refleja el fenómeno mismo (vitales sin registro vigente).
+- **Precios integrados para el 63% del catálogo** (el regulado solo cubre 30%); hallazgo: el 37% de los productos vigentes no tiene ningún dato público de precio.
+- 36+ tests en CI (unitarios + integración + **bias tests**); pipeline completo reproducible en ~3 minutos.
 
 ## Interpretación · Impacto potencial · Limitaciones
 
-*(se completan en docs/conclusiones.md — día 4)*
+Ver [docs/conclusiones.md](docs/conclusiones.md) y [docs/public_impact_assessment.md](docs/public_impact_assessment.md).
 
 ## 🚀 Solución en Producción (Demo en Vivo)
 
-- **Aplicación Web:** *(URL Railway — día 4)*
-- **Documentación de la API (Swagger):** *(URL/docs — día 4)*
+- **Aplicación Web:** *(URL Railway — pendiente del paso final de despliegue, ver [docs/despliegue.md](docs/despliegue.md))*
+- **Documentación de la API (Swagger):** *(URL de la API)/docs*
+
+## 📚 Documentación
+
+- **[Informe Técnico (PDF)](docs/informe_tecnico.pdf)** — desarrollo, métricas y resultados
+- **[Manual de Usuario (PDF)](docs/manual_usuario.pdf)** — guía paso a paso de la plataforma
+- **[Diagrama de Arquitectura](docs/architecture/arquitectura_sistema.png)** · [architecture.md](docs/architecture.md)
+- [Planteamiento del problema](docs/planteamiento_problema.md) · [Marco metodológico CRISP-ML(Q)](docs/marco_metodologico.md) · [Fuentes de datos](docs/fuentes_datos.md) · [Guía de validación para pares](docs/validation_guide.md) · [Guía de despliegue](docs/despliegue.md)
 
 ## Reproducir localmente
 
