@@ -2,6 +2,19 @@
 
 Registro cronológico de versiones y cambios.
 
+## [0.2.0] — 2026-07-05 · Día 2
+
+### Agregado
+- `src/features/build_features.py`: panel mensual PA × mes (591 principios activos) con features sin fuga temporal (frecuencia 3/6/12m, tendencia, recencia, amplitud de solicitantes, % urgencia).
+- `src/train.py`: validación predictiva con regresión logística y backtest temporal en 4 cortes — **AUC promedio 0,787 · precision@20 = 0,988**. Exporta modelo, `models/predictive/metrics.json` y figuras (`distribuciones`, `correlaciones`, `matriz_confusion`, `roc`).
+- `src/inference.py`: score compuesto interpretable 0–100 (pesos en `config/risk_model_params.yaml`) con nivel, tendencia y factores explicables (JSONB); 591 scores cargados a `risk_scores`.
+- API FastAPI (`src/api`): `GET /api/medicamentos?search=`, `GET /api/medicamentos/{expediente}` (perfil + riesgo + historial + precios + alternativas), `GET /api/riesgo/top`, `GET /api/stats`, `GET /health`. CORS configurable y búsqueda con `unaccent`.
+- `docs/diccionario_datos.md` (20 variables del consolidado).
+- 11 tests nuevos (features, score, API con TestClient contra Supabase) — 27 en total.
+
+### Cambiado
+- `integrate.py`: pre-limpieza de nombres de principios activos (concentraciones, paréntesis, números) y match por componentes en combinaciones ("X + Y"). Cruce sube de 22,2% → **27,5%** de PAs (32,4% de filas). El resto sin match se explica en gran parte porque los vitales no disponibles no tienen registro vigente en el CUM — hallazgo documentado.
+
 ## [0.1.0] — 2026-07-05 · Día 1
 
 ### Agregado

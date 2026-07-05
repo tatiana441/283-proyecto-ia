@@ -1,0 +1,59 @@
+{
+  "backtest": [
+    {
+      "corte": "2024-06",
+      "n_train": 44325,
+      "n_test": 1773,
+      "prevalencia_test": 0.184,
+      "auc": 0.757,
+      "precision_at_20": 1.0
+    },
+    {
+      "corte": "2024-12",
+      "n_train": 47871,
+      "n_test": 1773,
+      "prevalencia_test": 0.169,
+      "auc": 0.798,
+      "precision_at_20": 1.0
+    },
+    {
+      "corte": "2025-06",
+      "n_train": 51417,
+      "n_test": 1773,
+      "prevalencia_test": 0.164,
+      "auc": 0.861,
+      "precision_at_20": 1.0
+    },
+    {
+      "corte": "2025-11",
+      "n_train": 54372,
+      "n_test": 1182,
+      "prevalencia_test": 0.177,
+      "auc": 0.731,
+      "precision_at_20": 0.95
+    }
+  ],
+  "auc_promedio": 0.787,
+  "precision_at_20_promedio": 0.988,
+  "coeficientes": {
+    "n_solicitudes": 0.131,
+    "sol_3m": 0.587,
+    "sol_6m": 0.639,
+    "sol_12m": -1.201,
+    "solicitantes_12m": 1.924,
+    "pct_urgencia_6m": 0.07,
+    "tendencia_3m": -0.052,
+    "recencia_meses": -0.219
+  },
+  "features": [
+    "n_solicitudes",
+    "sol_3m",
+    "sol_6m",
+    "sol_12m",
+    "solicitantes_12m",
+    "pct_urgencia_6m",
+    "tendencia_3m",
+    "recencia_meses"
+  ],
+  "horizonte_meses": 3
+}

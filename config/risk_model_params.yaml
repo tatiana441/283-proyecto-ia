@@ -1,0 +1,24 @@
+# Parámetros del score de riesgo de desabastecimiento (interpretable por diseño)
+# score = 100 * suma(peso_i * componente_i), componentes en [0, 1]
+
+pesos:
+  frecuencia: 0.35      # percentil del nº de solicitudes en 12 meses (más solicitudes de importación = más escasez)
+  tendencia: 0.25       # crecimiento de solicitudes del trimestre vs trimestre anterior
+  recencia: 0.20        # qué tan reciente fue la última solicitud (decae linealmente a 12 meses)
+  amplitud: 0.10        # percentil del nº de solicitantes distintos (escasez generalizada vs caso puntual)
+  urgencia: 0.10        # proporción de solicitudes por urgencia clínica en 6 meses
+
+niveles:                # umbrales sobre el score 0-100
+  bajo: 25
+  medio: 50
+  alto: 75              # >= 75 es "critico"
+
+tendencia_umbral: 0.10  # |cambio relativo| para marcar subiendo/bajando
+
+# Modelo de validación predictiva
+modelo:
+  tipo: regresion_logistica
+  class_weight: balanced
+  label_horizonte_meses: 3          # y = registra solicitudes en los 3 meses siguientes
+  cortes_backtest: ["2024-06", "2024-12", "2025-06", "2025-11"]
+  precision_at_k: 20

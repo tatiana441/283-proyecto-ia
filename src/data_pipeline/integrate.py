@@ -12,6 +12,7 @@ Produce la tabla puente `match_principio_activo` y las métricas de cruce.
 """
 
 import json
+import re
 import unicodedata
 
 import pandas as pd
@@ -20,6 +21,15 @@ from rapidfuzz import fuzz, process
 from src.common import DATA_PROCESSED, REPORTS
 
 UMBRAL_FUZZY = 90
+
+# Concentraciones y unidades incrustadas en los nombres de Vitales
+# (p. ej. "METOTREXATO 50MG/2ML SOLUCION INYECTABLE")
+_RE_PARENTESIS = r"\([^)]*\)"
+_RE_CONCENTRACION = (
+    r"\b\d+([.,]\d+)?\s*(MCG|MG|UG|G|KG|UI|IU|MEQ|MMOL|ML|L|%)(\s*/\s*\d*([.,]\d+)?\s*(MCG|MG|UG|G|KG|UI|IU|MEQ|MMOL|ML|L|DOSIS|H))?\b"
+)
+_RE_NUMEROS_SUELTOS = r"\b\d+([.,]\d+)?\b"
+_RE_SEPARADOR_COMBO = r"\s*\+\s*|\s*/\s*"
 
 
 def normalize_text(texto) -> str | None:
@@ -33,28 +43,78 @@ def normalize_text(texto) -> str | None:
     return s or None
 
 
-def match_principios_activos(nombres_vitales: list[str], nombres_cum: list[str]) -> pd.DataFrame:
-    """Cascada exacto -> fuzzy -> sin match. Devuelve la tabla puente."""
-    cum_norm = {}
+def limpiar_nombre_pa(nombre: str | None) -> str | None:
+    """Quita concentraciones, paréntesis y números del nombre de un principio activo.
+
+    "METOTREXATO 50MG/2ML (SODICO)" -> "METOTREXATO"
+    """
+    s = normalize_text(nombre)
+    if not s:
+        return None
+    s = re.sub(_RE_PARENTESIS, " ", s)
+    s = re.sub(_RE_CONCENTRACION, " ", s)
+    s = re.sub(_RE_NUMEROS_SUELTOS, " ", s)
+    s = re.sub(r"[^A-ZÑ /+]", " ", s)
+    s = " ".join(s.split())
+    return s or None
+
+
+def componentes_pa(nombre_limpio: str) -> list[str]:
+    """Separa combinaciones ("LOPINAVIR + RITONAVIR" o "AMOXICILINA/CLAVULANATO") en componentes."""
+    partes = re.split(_RE_SEPARADOR_COMBO, nombre_limpio)
+    return [p.strip() for p in partes if p and len(p.strip()) > 3]
+
+
+def _indice_cum(nombres_cum: list[str]) -> dict[str, str]:
+    """Índice {variante_limpia -> nombre_cum_normalizado}: nombre completo limpio + cada componente."""
+    indice: dict[str, str] = {}
     for n in nombres_cum:
         nn = normalize_text(n)
-        if nn:
-            cum_norm.setdefault(nn, n)
-    universo_cum = list(cum_norm.keys())
+        limpio = limpiar_nombre_pa(n)
+        if not nn or not limpio:
+            continue
+        indice.setdefault(limpio, nn)
+        for comp in componentes_pa(limpio):
+            indice.setdefault(comp, nn)
+    return indice
+
+
+def match_principios_activos(nombres_vitales: list[str], nombres_cum: list[str]) -> pd.DataFrame:
+    """Cascada exacto -> fuzzy -> por componente (combos) -> sin match. Devuelve la tabla puente.
+
+    Tanto Vitales como CUM pasan por limpiar_nombre_pa (sin concentraciones ni
+    paréntesis); las combinaciones se intentan también por su primer componente.
+    """
+    indice = _indice_cum(nombres_cum)
+    universo = list(indice.keys())
+
+    def buscar(candidato: str):
+        if candidato in indice:
+            return indice[candidato], "exacto", 100.0
+        encontrado = process.extractOne(candidato, universo, scorer=fuzz.token_sort_ratio, score_cutoff=UMBRAL_FUZZY)
+        if encontrado:
+            return indice[encontrado[0]], "fuzzy", round(encontrado[1], 1)
+        return None, None, None
 
     filas = []
     for original in nombres_vitales:
         nv = normalize_text(original)
-        if not nv:
+        limpio = limpiar_nombre_pa(original)
+        if not nv or not limpio:
             continue
-        if nv in cum_norm:
-            filas.append({"nombre_vitales": nv, "nombre_cum": nv, "metodo": "exacto", "score": 100.0})
-            continue
-        encontrado = process.extractOne(nv, universo_cum, scorer=fuzz.token_sort_ratio, score_cutoff=UMBRAL_FUZZY)
-        if encontrado:
-            filas.append({"nombre_vitales": nv, "nombre_cum": encontrado[0], "metodo": "fuzzy", "score": round(encontrado[1], 1)})
-        else:
+
+        cum_name, metodo, score = buscar(limpio)
+        if metodo is None:
+            for comp in componentes_pa(limpio):
+                cum_name, metodo, score = buscar(comp)
+                if metodo is not None:
+                    metodo = f"{metodo}_componente"
+                    break
+
+        if metodo is None:
             filas.append({"nombre_vitales": nv, "nombre_cum": None, "metodo": "sin_match", "score": None})
+        else:
+            filas.append({"nombre_vitales": nv, "nombre_cum": cum_name, "metodo": metodo, "score": score})
 
     return pd.DataFrame(filas).drop_duplicates(subset=["nombre_vitales"])
 
@@ -79,11 +139,7 @@ def run(vitales_base: pd.DataFrame, principios_cum: pd.DataFrame) -> pd.DataFram
 
     metricas = {
         "principios_activos_vitales": total,
-        "match_exacto": por_metodo.get("exacto", 0),
-        "match_fuzzy": por_metodo.get("fuzzy", 0),
-        "sin_match": por_metodo.get("sin_match", 0),
-        "pct_exacto": round(100 * por_metodo.get("exacto", 0) / total, 1),
-        "pct_fuzzy": round(100 * por_metodo.get("fuzzy", 0) / total, 1),
+        "por_metodo": por_metodo,
         "pct_con_match": round(100 * (total - por_metodo.get("sin_match", 0)) / total, 1),
         "pct_filas_solicitudes_cruzan": round(100 * float(filas_cruzan), 1),
         "umbral_fuzzy": UMBRAL_FUZZY,
