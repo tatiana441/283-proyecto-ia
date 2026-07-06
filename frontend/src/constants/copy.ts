@@ -110,12 +110,14 @@ export const PROFILE = {
 // ── Pricing Section ──────────────────────────────────────────────────────────
 export const PRICING = {
   sectionTitle:       'Información de Precios',
-  averageLabel:       'Precio promedio del mercado',
+  averageLabel:       'Último precio reportado (SISMED)',
   regulatedLabel:     'Precio máximo regulado',
-  trendLabel:         'Tendencia histórica de precios',
+  trendLabel:         'Tendencia histórica de precios · SISMED 2017–2019',
   currencyLabel:      'COP',
   noDataLabel:        'Sin datos disponibles',
   sourceLabel:        'Fuente: Ministerio de Salud — Circular de precios',
+  notRegulatedValue:  'No regulado',
+  notRegulatedMeta:   'Este producto no está en la Circular de precios máximos vigente',
 };
 
 // ── Timeline ─────────────────────────────────────────────────────────────────

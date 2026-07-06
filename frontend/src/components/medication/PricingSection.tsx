@@ -14,15 +14,17 @@ function formatCOP(n: number): string {
 export default function PricingSection({ pricing }: PricingSectionProps) {
   const { averageMarketPrice, maxRegulatedPrice, currency, priceHistory } = pricing;
 
-  const pctOfMax  = Math.round((averageMarketPrice / maxRegulatedPrice) * 100);
-  const aboveMax  = averageMarketPrice > maxRegulatedPrice;
+  // Solo el 30% del catálogo tiene techo regulado (Circular CNPMDM); sin él no hay comparación
+  const hayTecho  = maxRegulatedPrice > 0;
+  const pctOfMax  = hayTecho ? Math.round((averageMarketPrice / maxRegulatedPrice) * 100) : null;
+  const aboveMax  = hayTecho && averageMarketPrice > maxRegulatedPrice;
 
   const cards = [
     {
       id: 'avg',
       label: PRICING.averageLabel,
-      value: formatCOP(averageMarketPrice),
-      meta:  currency,
+      value: averageMarketPrice > 0 ? formatCOP(averageMarketPrice) : PRICING.noDataLabel,
+      meta:  averageMarketPrice > 0 ? currency : 'Sin reportes en SISMED 2017–2019',
       color: aboveMax ? 'text-high' : 'text-primary',
       bg:    aboveMax ? 'bg-high-bg border-high' : 'bg-primary-bg border-primary',
       icon:  '💰',
@@ -30,21 +32,31 @@ export default function PricingSection({ pricing }: PricingSectionProps) {
     {
       id: 'max',
       label: PRICING.regulatedLabel,
-      value: formatCOP(maxRegulatedPrice),
-      meta:  PRICING.sourceLabel,
+      value: hayTecho ? formatCOP(maxRegulatedPrice) : PRICING.notRegulatedValue,
+      meta:  hayTecho ? PRICING.sourceLabel : PRICING.notRegulatedMeta,
       color: 'text-slate-900',
       bg:    'bg-slate-50 border-slate-200',
       icon:  '🏛️',
     },
-    {
-      id: 'pct',
-      label: `${pctOfMax}% del máximo`,
-      value: `${pctOfMax}%`,
-      meta:  aboveMax ? 'Por encima del límite' : 'Dentro del límite',
-      color: aboveMax ? 'text-high' : 'text-low',
-      bg:    aboveMax ? 'bg-high-bg border-high' : 'bg-low-bg border-low',
-      icon:  aboveMax ? '⚠️' : '✅',
-    },
+    hayTecho
+      ? {
+          id: 'pct',
+          label: `${pctOfMax}% del máximo`,
+          value: `${pctOfMax}%`,
+          meta:  aboveMax ? 'Por encima del límite' : 'Dentro del límite',
+          color: aboveMax ? 'text-high' : 'text-low',
+          bg:    aboveMax ? 'bg-high-bg border-high' : 'bg-low-bg border-low',
+          icon:  aboveMax ? '⚠️' : '✅',
+        }
+      : {
+          id: 'pct',
+          label: 'Comparación con el techo',
+          value: '—',
+          meta:  'Sin techo regulado no hay límite contra el cual comparar',
+          color: 'text-slate-400',
+          bg:    'bg-slate-50 border-slate-200',
+          icon:  'ℹ️',
+        },
   ];
 
   return (
@@ -62,7 +74,7 @@ export default function PricingSection({ pricing }: PricingSectionProps) {
 
       <div className="p-6 flex flex-col gap-6">
         {/* Price cards */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {cards.map(card => (
             <div
               key={card.id}
@@ -80,6 +92,7 @@ export default function PricingSection({ pricing }: PricingSectionProps) {
         </div>
 
         {/* Recharts sparkline */}
+        {priceHistory.length > 0 && (
         <div aria-label={PRICING.trendLabel}>
           <p className="text-xs font-semibold tracking-[0.06em] uppercase text-slate-400 mb-4">
             {PRICING.trendLabel}
@@ -130,6 +143,7 @@ export default function PricingSection({ pricing }: PricingSectionProps) {
             </ResponsiveContainer>
           </div>
         </div>
+        )}
       </div>
     </section>
   );

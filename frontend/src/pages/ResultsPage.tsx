@@ -127,10 +127,10 @@ export default function ResultsPage() {
         )}
 
         {/* Two-column layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-6 items-start">
 
           {/* Main column */}
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 min-w-0">
             <MedicationProfileCard profile={profile} />
             <RiskAnalysisSection risk={risk} />
             {hayPrecios ? (
@@ -153,7 +153,7 @@ export default function ResultsPage() {
           </div>
 
           {/* Sticky sidebar */}
-          <div className="flex flex-col gap-6 lg:sticky lg:top-[88px]">
+          <div className="flex flex-col gap-6 min-w-0 lg:sticky lg:top-[88px]">
             <NotificationsSubscription />
           </div>
 
