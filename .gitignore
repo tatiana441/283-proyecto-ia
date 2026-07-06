@@ -19,6 +19,9 @@ venv/
 frontend/node_modules/
 frontend/dist/
 
+# Evidencia E2E (capturas generadas por tests/e2e_browser)
+reports/e2e/
+
 # Notebooks
 .ipynb_checkpoints/
 

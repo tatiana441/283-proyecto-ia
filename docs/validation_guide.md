@@ -40,6 +40,23 @@ python -m pytest tests/ -v          # unit + integración + bias
 python -m pytest tests/bias_tests -v  # solo equidad
 ```
 
+### 4b. Tests E2E de interfaz (opt-in, con navegador real)
+
+Siguiendo el patrón del curso (agent-browser de Vercel, módulo 13): un Chrome real
+abre la app, hace login, navega al detalle de un medicamento y verifica que no haya
+valores sin formatear (Infinity/NaN) ni desbordes de layout, dejando capturas como
+evidencia en `reports/e2e/`.
+
+```bash
+npm install -g agent-browser        # una sola vez
+# levantar la app: uvicorn src.api.main:app  +  npm run dev (frontend/)
+# credenciales del usuario de prueba en .env: E2E_EMAIL y E2E_PASSWORD
+E2E_BROWSER=1 python -m pytest tests/e2e_browser -v
+```
+
+Son opt-in (se saltan sin `E2E_BROWSER=1`) para que el CI no requiera navegador, y
+las credenciales viven solo en `.env` — nunca en el repo.
+
 ## 5. Verificar la API y la trazabilidad
 
 ```bash

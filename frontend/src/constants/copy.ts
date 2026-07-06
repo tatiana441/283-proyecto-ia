@@ -84,6 +84,12 @@ export const RISK = {
 
   aiInsightTitle:   'Análisis de Inteligencia Artificial',
   aiInsightIcon:    '🤖',
+  educationBody:
+    'Cuando un medicamento escasea en Colombia, los hospitales piden a INVIMA importarlo por vía excepcional ' +
+    '("Medicamentos Vitales No Disponibles"); cada solicitud es una señal de escasez. El puntaje 0–100 combina ' +
+    'cinco factores sobre esas solicitudes: frecuencia (35%), tendencia al alza (25%), qué tan recientes son (20%), ' +
+    'cuántos solicitantes distintos hay (10%) y su urgencia (10%). De 0 a 33 el riesgo es bajo, de 34 a 66 en ' +
+    'observación y de 67 en adelante alto. El método fue validado con un backtest temporal (AUC 0,79).',
 };
 
 // ── Medication Profile Card ──────────────────────────────────────────────────
@@ -118,6 +124,12 @@ export const PRICING = {
   sourceLabel:        'Fuente: Ministerio de Salud — Circular de precios',
   notRegulatedValue:  'No regulado',
   notRegulatedMeta:   'Este producto no está en la Circular de precios máximos vigente',
+  educationBody:
+    'El "último precio reportado" viene de SISMED, el sistema donde laboratorios y EPS reportan sus ventas; ' +
+    'la serie disponible cubre 2017 a mediados de 2019, por eso la gráfica llega hasta ahí (es una referencia ' +
+    'histórica, no el precio de farmacia de hoy). El "precio máximo regulado" sí es vigente: es el techo fijado ' +
+    'por la Comisión Nacional de Precios (Circular 19 de 2024), que solo cubre los mercados intervenidos — ' +
+    'alrededor del 30% de los productos. Si dice "No regulado", ese producto no tiene techo de precio.',
 };
 
 // ── Timeline ─────────────────────────────────────────────────────────────────

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine,
@@ -13,6 +14,7 @@ function formatCOP(n: number): string {
 
 export default function PricingSection({ pricing }: PricingSectionProps) {
   const { averageMarketPrice, maxRegulatedPrice, currency, priceHistory } = pricing;
+  const [showInfo, setShowInfo] = useState(false);
 
   // Solo el 30% del catálogo tiene techo regulado (Circular CNPMDM); sin él no hay comparación
   const hayTecho  = maxRegulatedPrice > 0;
@@ -65,12 +67,34 @@ export default function PricingSection({ pricing }: PricingSectionProps) {
       aria-labelledby="pricing-section-title"
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-200">
-        <span className="text-[22px]" aria-hidden="true">💹</span>
-        <h2 id="pricing-section-title" className="text-lg font-bold text-slate-900 tracking-[-0.02em]">
-          {PRICING.sectionTitle}
-        </h2>
+      <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <span className="text-[22px]" aria-hidden="true">💹</span>
+          <h2 id="pricing-section-title" className="text-lg font-bold text-slate-900 tracking-[-0.02em]">
+            {PRICING.sectionTitle}
+          </h2>
+        </div>
+        <button
+          className="text-xs font-semibold text-primary bg-primary-bg px-3 py-1.5 rounded-full border border-primary/20 transition-colors hover:bg-primary hover:text-white cursor-pointer"
+          onClick={() => setShowInfo(p => !p)}
+          aria-expanded={showInfo}
+          aria-controls="pricing-edu-panel"
+        >
+          {showInfo ? '✕ Cerrar' : '¿Qué es esto?'}
+        </button>
       </div>
+
+      {/* Collapsible education panel */}
+      {showInfo && (
+        <div
+          id="pricing-edu-panel"
+          className="mx-6 mt-4 bg-primary-bg border border-primary/15 border-l-4 border-l-primary rounded-lg p-4 text-sm text-slate-500 leading-[1.7] animate-[fade-in_0.25s_ease]"
+          role="region"
+          aria-label="De dónde vienen los precios"
+        >
+          {PRICING.educationBody}
+        </div>
+      )}
 
       <div className="p-6 flex flex-col gap-6">
         {/* Price cards */}

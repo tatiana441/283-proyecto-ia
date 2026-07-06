@@ -55,6 +55,7 @@ export default function RiskAnalysisSection({ risk }: RiskAnalysisSectionProps) 
   const cls   = LEVEL_CLASSES[level];
   const trendCls = TREND_CLASSES[trend];
 
+  const [showInfo, setShowInfo] = useState(false);
   const [animated, setAnimated] = useState(false);
   const progressRef = useRef<SVGPathElement>(null);
 
@@ -82,14 +83,36 @@ export default function RiskAnalysisSection({ risk }: RiskAnalysisSectionProps) 
             {RISK.sectionTitle}
           </h2>
         </div>
-        <time
-          className="text-xs text-slate-400 font-medium"
-          dateTime={lastUpdated}
-          aria-label={`${RISK.lastUpdated}: ${formatDate(lastUpdated)}`}
-        >
-          {RISK.lastUpdated}: {formatDate(lastUpdated)}
-        </time>
+        <div className="flex items-center gap-3 flex-wrap">
+          <time
+            className="text-xs text-slate-400 font-medium"
+            dateTime={lastUpdated}
+            aria-label={`${RISK.lastUpdated}: ${formatDate(lastUpdated)}`}
+          >
+            {RISK.lastUpdated}: {formatDate(lastUpdated)}
+          </time>
+          <button
+            className="text-xs font-semibold text-primary bg-primary-bg px-3 py-1.5 rounded-full border border-primary/20 transition-colors hover:bg-primary hover:text-white cursor-pointer"
+            onClick={() => setShowInfo(p => !p)}
+            aria-expanded={showInfo}
+            aria-controls="risk-edu-panel"
+          >
+            {showInfo ? '✕ Cerrar' : '¿Qué es esto?'}
+          </button>
+        </div>
       </div>
+
+      {/* Collapsible education panel */}
+      {showInfo && (
+        <div
+          id="risk-edu-panel"
+          className="mx-6 mt-4 bg-primary-bg border border-primary/15 border-l-4 border-l-primary rounded-lg p-4 text-sm text-slate-500 leading-[1.7] animate-[fade-in_0.25s_ease]"
+          role="region"
+          aria-label="Cómo se calcula el puntaje de riesgo"
+        >
+          {RISK.educationBody}
+        </div>
+      )}
 
       {/* Two-column body */}
       <div className="grid grid-cols-1 md:grid-cols-2">
@@ -142,22 +165,8 @@ export default function RiskAnalysisSection({ risk }: RiskAnalysisSectionProps) 
           </div>
         </div>
 
-        {/* ── Right: Trend + AI Insight ── */}
+        {/* ── Right: AI Insight (junto al velocímetro) + Trend ── */}
         <div className="flex flex-col px-6 py-6 gap-5">
-
-          {/* Trend card */}
-          <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg px-5 py-4 gap-3">
-            <span className="text-sm font-medium text-slate-500">Tendencia actual</span>
-            <div
-              className={`flex items-center gap-2 text-sm font-semibold ${trendCls.value}`}
-              aria-label={`Tendencia: ${trendLabel}`}
-            >
-              <span className={`text-xl font-bold inline-block ${trendCls.arrow}`} aria-hidden="true">
-                {trendIcon}
-              </span>
-              {trendLabel}
-            </div>
-          </div>
 
           {/* AI insight */}
           <div
@@ -172,6 +181,20 @@ export default function RiskAnalysisSection({ risk }: RiskAnalysisSectionProps) 
               </h3>
             </div>
             <p className="text-sm text-slate-500 leading-[1.7]">{aiInsight}</p>
+          </div>
+
+          {/* Trend card */}
+          <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg px-5 py-4 gap-3">
+            <span className="text-sm font-medium text-slate-500">Tendencia actual</span>
+            <div
+              className={`flex items-center gap-2 text-sm font-semibold ${trendCls.value}`}
+              aria-label={`Tendencia: ${trendLabel}`}
+            >
+              <span className={`text-xl font-bold inline-block ${trendCls.arrow}`} aria-hidden="true">
+                {trendIcon}
+              </span>
+              {trendLabel}
+            </div>
           </div>
         </div>
       </div>
