@@ -50,7 +50,7 @@ interface RiskAnalysisSectionProps {
 }
 
 export default function RiskAnalysisSection({ risk }: RiskAnalysisSectionProps) {
-  const { score, trend, aiInsight, lastUpdated } = risk;
+  const { score, trend, aiInsight, lastUpdated, mlProbability } = risk;
   const level = scoreToLevel(score);
   const cls   = LEVEL_CLASSES[level];
   const trendCls = TREND_CLASSES[trend];
@@ -182,6 +182,24 @@ export default function RiskAnalysisSection({ risk }: RiskAnalysisSectionProps) 
             </div>
             <p className="text-sm text-slate-500 leading-[1.7]">{aiInsight}</p>
           </div>
+
+          {/* Predicción del modelo logístico (solo si el PA tiene score) */}
+          {typeof mlProbability === 'number' && (
+            <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg px-5 py-4 gap-3">
+              <div className="flex flex-col gap-1 min-w-0">
+                <span className="text-sm font-semibold text-slate-700">🎯 {RISK.predictionLabel}</span>
+                <span className="text-xs text-slate-400 leading-snug">{RISK.predictionMeta}</span>
+              </div>
+              <span
+                className={`text-2xl font-bold shrink-0 ${
+                  mlProbability >= 0.7 ? 'text-high' : mlProbability >= 0.4 ? 'text-monitor' : 'text-low'
+                }`}
+                aria-label={`Probabilidad estimada: ${Math.round(mlProbability * 100)} por ciento`}
+              >
+                {Math.round(mlProbability * 100)}%
+              </span>
+            </div>
+          )}
 
           {/* Trend card */}
           <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg px-5 py-4 gap-3">

@@ -23,6 +23,7 @@ export interface RiskAnalysis {
   aiInsight: string;
   lastUpdated: string; // ISO date string
   reportingPeriods?: number; // # of periods with increased demand
+  mlProbability?: number | null; // prob. (0-1) de nuevas solicitudes en 3 meses — modelo validado
 }
 
 export interface PricePoint {

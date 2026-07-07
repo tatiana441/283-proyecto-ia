@@ -84,6 +84,8 @@ export const RISK = {
 
   aiInsightTitle:   'Análisis de Inteligencia Artificial',
   aiInsightIcon:    '🤖',
+  predictionLabel:  'Predicción IA · próximos 3 meses',
+  predictionMeta:   'Probabilidad de nuevas solicitudes de escasez, según regresión logística validada con backtest (AUC 0,79)',
   educationBody:
     'Cuando un medicamento escasea en Colombia, los hospitales piden a INVIMA importarlo por vía excepcional ' +
     '("Medicamentos Vitales No Disponibles"); cada solicitud es una señal de escasez. El puntaje 0–100 combina ' +

@@ -46,7 +46,7 @@ def riesgo_medicamento(principio_activo: str):
     patron = f"%{principio_activo.strip()}%"
     filas = query(
         f"""
-        SELECT principio_activo, mes, score, nivel, tendencia, factores
+        SELECT principio_activo, mes, score, nivel, tendencia, factores, prob_ml
         FROM risk_scores
         WHERE {_NORM.format('principio_activo')} LIKE {_NORM.format('%s')}
         ORDER BY score DESC LIMIT 5

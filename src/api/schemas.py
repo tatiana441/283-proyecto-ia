@@ -21,6 +21,8 @@ class Riesgo(BaseModel):
     nivel: str
     tendencia: str
     factores: dict
+    # Probabilidad (modelo logístico validado) de nuevas solicitudes en 3 meses
+    prob_ml: float | None = None
 
 
 class StatsRespuesta(BaseModel):

@@ -39,7 +39,8 @@ Predictivo (clasificación) + descriptivo. **Modelo:** score compuesto interpret
 - **591 principios activos con score** de riesgo (155 en nivel alto/crítico al corte 2026-04); el riesgo se concentra en medicamentos huérfanos y en esenciales como la lidocaína (89,7).
 - Integración sin llave directa (IUM 100% vacío): cascada exacto → fuzzy → componentes cubre 27,5% de los PAs y 32,4% de las solicitudes ([reports/metricas_integracion.json](reports/metricas_integracion.json)); el "sin match" restante refleja el fenómeno mismo (vitales sin registro vigente).
 - **Precios integrados para el 63% del catálogo** (el regulado solo cubre 30%); hallazgo: el 37% de los productos vigentes no tiene ningún dato público de precio.
-- 36+ tests en CI (unitarios + integración + **bias tests**); pipeline completo reproducible en ~3 minutos.
+- **Predicción de ML en producción**: cada medicamento muestra la probabilidad de nuevas solicitudes de escasez en los próximos 3 meses, calculada por la regresión logística validada (no solo documentada: visible en la app y consultable por el asistente).
+- 36+ tests en CI (unitarios + integración + **bias tests**) y suite E2E de navegador real con agent-browser; pipeline completo reproducible en ~3 minutos.
 
 ## Interpretación · Impacto potencial · Limitaciones
 

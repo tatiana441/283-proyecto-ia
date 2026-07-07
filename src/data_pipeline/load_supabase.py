@@ -77,7 +77,8 @@ INDICES = {
 DDL_PERMANENTES = """
 CREATE TABLE IF NOT EXISTS risk_scores (
     principio_activo TEXT, mes TEXT, score DOUBLE PRECISION, nivel TEXT,
-    tendencia TEXT, factores JSONB, calculado_en TIMESTAMPTZ DEFAULT now());
+    tendencia TEXT, factores JSONB, prob_ml DOUBLE PRECISION,
+    calculado_en TIMESTAMPTZ DEFAULT now());
 CREATE TABLE IF NOT EXISTS chat_logs (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, user_id UUID,
     pregunta TEXT, respuesta TEXT, sources JSONB, creado_en TIMESTAMPTZ DEFAULT now());

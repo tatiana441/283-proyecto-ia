@@ -146,6 +146,7 @@ def test_detalle_medicamento_lidocaina():
     )
     assert secciones["riesgo"], "no se renderizó la sección de riesgo"
     assert "Puntuación" in secciones["texto"] or "Riesgo" in secciones["texto"]
+    assert "Predicción IA" in secciones["texto"], "falta la tarjeta de predicción del modelo"
     ab("screenshot", str(EVIDENCIA / "03_detalle_lidocaina.png"), "--full")
 
 

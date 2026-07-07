@@ -6,6 +6,7 @@ el frontend y el asistente puedan explicar el porqué de cada score.
 """
 
 import json
+import pickle
 
 import pandas as pd
 import psycopg
@@ -13,6 +14,8 @@ import yaml
 
 from src.common import DATA_PROCESSED, REPO_ROOT, database_url
 from src.features.build_features import construir_panel
+
+MODELO_PKL = REPO_ROOT / "models" / "predictive" / "modelo_riesgo.pkl"
 
 
 def _params() -> dict:
@@ -72,7 +75,17 @@ def calcular_scores(panel: pd.DataFrame, params: dict | None = None) -> pd.DataF
         axis=1,
     )
 
-    out = df[["pa", "mes", "score", "nivel", "tendencia", "factores"]].rename(
+    # Predicción del modelo logístico validado (backtest temporal): probabilidad
+    # de nuevas solicitudes en los próximos 3 meses. Si el pkl no está, se omite.
+    try:
+        with open(MODELO_PKL, "rb") as f:
+            artefacto = pickle.load(f)
+        df["prob_ml"] = artefacto["modelo"].predict_proba(df[artefacto["features"]])[:, 1].round(3)
+    except FileNotFoundError:
+        print("[inference] modelo_riesgo.pkl no encontrado: scores sin prob_ml")
+        df["prob_ml"] = None
+
+    out = df[["pa", "mes", "score", "nivel", "tendencia", "factores", "prob_ml"]].rename(
         columns={"pa": "principio_activo"}
     )
     return out.sort_values("score", ascending=False).reset_index(drop=True)
@@ -86,9 +99,10 @@ def cargar_supabase(scores: pd.DataFrame) -> None:
     buf.seek(0)
     with psycopg.connect(database_url(), connect_timeout=20) as conn:
         with conn.cursor() as cur:
+            cur.execute("ALTER TABLE risk_scores ADD COLUMN IF NOT EXISTS prob_ml DOUBLE PRECISION")
             cur.execute("DELETE FROM risk_scores")
             with cur.copy(
-                "COPY risk_scores (principio_activo, mes, score, nivel, tendencia, factores) "
+                "COPY risk_scores (principio_activo, mes, score, nivel, tendencia, factores, prob_ml) "
                 "FROM STDIN WITH (FORMAT csv, NULL '')"
             ) as copy:
                 copy.write(buf.getvalue())

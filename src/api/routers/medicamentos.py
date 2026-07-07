@@ -80,7 +80,7 @@ def detalle(expediente: int):
 
     riesgo = query_one(
         f"""
-        SELECT rs.principio_activo, rs.mes, rs.score, rs.nivel, rs.tendencia, rs.factores
+        SELECT rs.principio_activo, rs.mes, rs.score, rs.nivel, rs.tendencia, rs.factores, rs.prob_ml
         FROM risk_scores rs
         JOIN match_principio_activo m ON m.nombre_vitales = rs.principio_activo
         JOIN principios_activos_cum pa ON m.nombre_cum = {_NORM.format('pa.principioactivo')}

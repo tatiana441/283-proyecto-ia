@@ -43,6 +43,7 @@ export interface ApiRiesgo {
   tendencia: string;
   factores: Record<string, unknown>;
   ai_insight?: string;
+  prob_ml?: number | null;
 }
 
 export interface ApiStats {
@@ -156,6 +157,7 @@ export async function obtenerDetalle(expediente: number): Promise<MedicationDeta
         aiInsight: d.riesgo.ai_insight ?? '',
         lastUpdated: d.riesgo.mes,
         reportingPeriods: Number(d.riesgo.factores?.solicitudes_12m ?? 0),
+        mlProbability: d.riesgo.prob_ml ?? null,
       }
     : {
         score: 0,

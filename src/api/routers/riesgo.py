@@ -14,7 +14,7 @@ def top(n: int = Query(20, le=100), nivel: str | None = None):
     params = (nivel, n) if nivel else (n,)
     return query(
         f"""
-        SELECT principio_activo, mes, score, nivel, tendencia, factores
+        SELECT principio_activo, mes, score, nivel, tendencia, factores, prob_ml
         FROM risk_scores {condicion}
         ORDER BY score DESC LIMIT %s
         """,
