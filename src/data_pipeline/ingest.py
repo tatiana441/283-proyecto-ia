@@ -7,6 +7,7 @@ local (snapshot 2026-06-04) para que el pipeline nunca se quede sin datos.
 
 import os
 import sys
+import time
 from datetime import date
 from pathlib import Path
 
@@ -28,8 +29,14 @@ VITALES_API_TO_CSV = {
 }
 
 
-def fetch_dataset(resource_id: str, base_url: str, page_size: int, timeout: int) -> pd.DataFrame:
-    """Descarga un dataset completo paginando la API SODA."""
+def fetch_dataset(
+    resource_id: str, base_url: str, page_size: int, timeout: int, reintentos: int = 3
+) -> pd.DataFrame:
+    """Descarga un dataset completo paginando la API SODA.
+
+    datos.gov.co responde lento en horas pico: cada página se reintenta con
+    espera progresiva antes de rendirse (el cron de madrugada lo necesita).
+    """
     headers = {}
     token = os.environ.get("SODA_APP_TOKEN")
     if token:
@@ -39,8 +46,20 @@ def fetch_dataset(resource_id: str, base_url: str, page_size: int, timeout: int)
     while True:
         url = f"{base_url}/{resource_id}.json"
         params = {"$limit": page_size, "$offset": offset, "$order": ":id"}
-        resp = requests.get(url, params=params, headers=headers, timeout=timeout)
-        resp.raise_for_status()
+        for intento in range(1, reintentos + 1):
+            try:
+                resp = requests.get(url, params=params, headers=headers, timeout=timeout)
+                resp.raise_for_status()
+                break
+            except requests.RequestException as e:
+                if intento == reintentos:
+                    raise
+                espera = 20 * intento
+                print(
+                    f"[ingest] {resource_id} offset={offset}: intento {intento} falló "
+                    f"({type(e).__name__}); reintento en {espera}s"
+                )
+                time.sleep(espera)
         chunk = resp.json()
         if not chunk:
             break

@@ -2,8 +2,8 @@
 # Verificado en vivo el 2026-07-05
 
 base_url: "https://www.datos.gov.co/resource"
-page_size: 50000
-timeout_seconds: 120
+page_size: 20000
+timeout_seconds: 300
 # App token opcional (evita throttling): variable de entorno SODA_APP_TOKEN
 
 datasets:
