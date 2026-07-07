@@ -51,6 +51,13 @@ Ver [docs/conclusiones.md](docs/conclusiones.md) y [docs/public_impact_assessmen
 - **Aplicación Web:** https://respectful-appreciation-production.up.railway.app
 - **Documentación de la API (Swagger):** https://283-proyecto-abierto-ia-production.up.railway.app/docs
 
+### Capturas
+
+| | |
+|---|---|
+| ![Landing](RECURSOS/capturas/01_landing.png) | ![Dashboard](RECURSOS/capturas/02_dashboard.png) |
+| ![Detalle con riesgo y predicción](RECURSOS/capturas/03_detalle_riesgo.png) | ![Asistente citando fuentes](RECURSOS/capturas/04_asistente_fuentes.png) |
+
 ## 📚 Documentación
 
 - **[Informe Técnico (PDF)](docs/informe_tecnico.pdf)** — desarrollo, métricas y resultados
