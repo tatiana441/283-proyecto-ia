@@ -47,8 +47,8 @@ Ver [docs/conclusiones.md](docs/conclusiones.md) y [docs/public_impact_assessmen
 
 ## 🚀 Solución en Producción (Demo en Vivo)
 
-- **Aplicación Web:** *(URL Railway — pendiente del paso final de despliegue, ver [docs/despliegue.md](docs/despliegue.md))*
-- **Documentación de la API (Swagger):** *(URL de la API)/docs*
+- **Aplicación Web:** https://respectful-appreciation-production.up.railway.app
+- **Documentación de la API (Swagger):** https://283-proyecto-abierto-ia-production.up.railway.app/docs
 
 ## 📚 Documentación
 
