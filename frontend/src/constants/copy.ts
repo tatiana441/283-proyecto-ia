@@ -117,6 +117,10 @@ export const PRICING = {
   notRegulatedValue:  'No regulado',
   notRegulatedMeta:   'Este producto no está en la Circular de precios máximos vigente',
   referenceTitle:     'Precio de referencia vigente por unidad · Termómetro Clicsalud (MinSalud, oct 2024)',
+  referenceDisclaimer:
+    'ℹ️ Valor de referencia con corte a octubre de 2024, la última publicación oficial disponible. ' +
+    'El precio real en 2026 puede variar según la entidad, el canal, negociaciones y descuentos; ' +
+    'úsalo como orientación, no como precio final de compra.',
   educationBody:
     'El "precio de referencia por unidad" es el más actual: viene del Termómetro de Precios de Clicsalud ' +
     '(Ministerio de Salud, corte octubre 2024) e indica cuánto debería costar cada tableta o ampolla en el ' +

@@ -154,6 +154,9 @@ export default function PricingSection({ pricing }: PricingSectionProps) {
                 );
               })}
             </div>
+            <p className="text-xs text-slate-400 mt-3 leading-relaxed">
+              {PRICING.referenceDisclaimer}
+            </p>
           </div>
         )}
 
