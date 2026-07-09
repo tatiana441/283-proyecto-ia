@@ -1,0 +1,22 @@
+# Tarea programada de MediWatch: re-ingesta desde datos.gov.co + recálculo de scores.
+# Contexto de build: la raíz del repo.
+#   docker build -f deployments/docker/Dockerfile.cron -t mediwatch-cron .
+#   docker run --env DATABASE_URL=... mediwatch-cron
+#
+# Nota: en producción esta tarea la ejecuta GitHub Actions (data-update-cron.yml),
+# que aporta logs, historial y manejo de secrets sin infraestructura extra.
+# Esta imagen existe para portabilidad: cualquier orquestador (Kubernetes CronJob,
+# ECS Scheduled Task, cron de un VPS) puede correr la misma tarea idéntica.
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY src ./src
+COPY config ./config
+COPY models/predictive ./models/predictive
+
+CMD ["sh", "-c", "python -m src.data_pipeline.run_all && python -m src.inference"]

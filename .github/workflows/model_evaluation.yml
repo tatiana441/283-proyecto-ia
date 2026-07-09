@@ -1,0 +1,43 @@
+# Monitoreo de desvío del modelo (data drift): reentrena mensualmente con datos
+# frescos de datos.gov.co y FALLA si las métricas caen bajo el umbral — la falla
+# del workflow es la alerta. No toca la base de datos (--skip-load).
+
+name: Evaluación mensual del modelo
+
+on:
+  schedule:
+    - cron: "0 4 1 * *" # día 1 de cada mes, 4 a.m. UTC
+  workflow_dispatch: {}
+
+jobs:
+  evaluar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+      - name: Datos frescos (SODA en vivo, sin tocar la BD)
+        run: python -m src.data_pipeline.run_all --skip-load
+      - name: Reentrenar y backtest temporal
+        run: python -m src.train
+      - name: Verificar umbrales (alerta de drift)
+        run: |
+          python - <<'FIN'
+          import json, sys
+          m = json.load(open("models/predictive/metrics.json"))
+          auc, p20 = m["auc_promedio"], m["precision_at_20_promedio"]
+          print(f"AUC promedio: {auc} (umbral 0.70) | precision@20: {p20} (umbral 0.90)")
+          if auc < 0.70 or p20 < 0.90:
+              sys.exit("DRIFT: las métricas cayeron bajo el umbral — revisar el modelo")
+          print("OK: el modelo mantiene su desempeño con datos frescos")
+          FIN
+      - name: Publicar métricas como evidencia
+        uses: actions/upload-artifact@v4
+        with:
+          name: metrics-${{ github.run_id }}
+          path: |
+            models/predictive/metrics.json
+            reports/figures/
