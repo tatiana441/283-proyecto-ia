@@ -2,6 +2,17 @@
 
 Registro cronológico de versiones y cambios.
 
+## [0.5.0] — 2026-07-12 · Robustez y validación
+
+### Agregado
+- **Guardia anti-falsos en el cruce fuzzy** (`integrate.py::_token_distintivo_difiere` + 4 tests): descarta cruces que solo difieren por número romano (Factor VIII vs XIII), isómero (interferón alfa vs beta) o prefijo (megestrol vs nomegestrol). Revisión manual de los 26 cruces por similitud → elimina 6 falsos, conserva 23 legítimos.
+- **Línea base de contraste** en la evaluación: ordenar por sola frecuencia (persistencia) iguala el precision@20; el ranking se documenta como validación de señal, no como superioridad sobre reglas simples (`conclusiones.md`, `marco_metodologico.md`).
+- **Aviso de uso responsable** en el panel del score (frontend): un puntaje alto no implica desabastecimiento inmediato ni justifica acumular.
+
+### Corregido
+- Etiquetas de las figuras del modelo: la ROC/matriz muestran el AUC del último corte (0,731), distinto del promedio de los 4 cortes (0,787) — aclarado para evitar confusión.
+- Cobertura del cruce: 27% → **26%** de PAs tras descartar los 6 falsos (`reports/metricas_integracion.json`, propagado a la BD).
+
 ## [0.4.0] — 2026-07-05 · Día 4
 
 ### Agregado
