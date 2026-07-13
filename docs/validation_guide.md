@@ -18,7 +18,7 @@ python -m src.data_pipeline.run_all
 
 Qué verificar:
 - Ingesta EN VIVO desde datos.gov.co (los conteos cambian con el tiempo; al cierre de este proyecto: CUM ~157k, Vitales ~10,5k, Precios regulados ~38,6k).
-- `reports/metricas_integracion.json` → % de match por método (esperado ≈27,5% de PAs).
+- `reports/metricas_integracion.json` → % de match por método (esperado ≈27% de PAs; baja a ~26% al propagarse el guardia anti-falsos que descarta 6 cruces por número romano/isómero, p. ej. Factor VIII vs XIII).
 - Nota: sin el parquet SISMED local, el paso de precios históricos se omite con aviso — es el comportamiento diseñado.
 
 ## 3. Reproducir el modelo y sus métricas (~1 min)
@@ -39,6 +39,8 @@ Qué verificar:
 python -m pytest tests/ -v          # unit + integración + bias
 python -m pytest tests/bias_tests -v  # solo equidad
 ```
+
+El guardia anti-falsos del fuzzy está cubierto por `tests/unit/test_integrate.py` (`test_guardia_rechaza_*`): verifica que Factor XIII no cruce con Factor VIII, interferón alfa con beta, ni megestrol con nomegestrol, sin afectar las variaciones legítimas.
 
 ### 4b. Tests E2E de interfaz (opt-in, con navegador real)
 

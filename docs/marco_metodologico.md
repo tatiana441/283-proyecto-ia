@@ -13,7 +13,8 @@ MediWatch sigue el ciclo CRISP-ML(Q) (Cross-Industry Standard Process for Machin
 
 - Limpieza reproducible portada 1:1 de los notebooks de EDA del equipo (`notebooks/02_*`) a módulos probados (`src/data_pipeline/clean_*.py`): normalización de columnas, texto, fechas con sentinelas, deduplicación, validación ATC/CIE-10, banderas de calidad.
 - SISMED: corrección de encoding, precios 0 → no reportado, winsorización p99.5, agregación Mes × Expediente × TipoReporte (3,7M → 724k filas).
-- Integración en cascada: exacto → fuzzy (rapidfuzz token_sort_ratio ≥ 90) → por componente de combinaciones → sin match, con pre-limpieza de concentraciones y paréntesis. Métricas honestas en `reports/metricas_integracion.json` (27,5% de PAs, 32,4% de filas). El "sin match" restante refleja el fenómeno: los vitales no disponibles suelen carecer de registro vigente.
+- Integración en cascada: exacto → fuzzy (rapidfuzz token_sort_ratio ≥ 90) → por componente de combinaciones → sin match, con pre-limpieza de concentraciones y paréntesis. Métricas en `reports/metricas_integracion.json` (~27% de PAs, 32,4% de filas). El "sin match" restante refleja el fenómeno: los vitales no disponibles suelen carecer de registro vigente (medido: el 72% de los "sin match" no se parece a ningún nombre del CUM, umbral <75).
+- **Validación manual del fuzzy + guardia anti-falsos.** Se revisaron los 26 matches por similitud uno a uno. Se detectaron 6 falsos positivos que rapidfuzz dejaba pasar por >90 aunque cambiaran la molécula (número romano: Factor VIII vs XI vs XIII; isómero/griega: interferón alfa vs beta; prefijo: megestrol vs NOmegestrol). Se añadió un guardia (`_token_distintivo_difiere` en `integrate.py`, cubierto por tests) que exige coincidencia en esos tokens distintivos; elimina los 6 y conserva las 23 variantes legítimas. Impacto acotado: el puente solo enriquece la ficha, no alimenta el score.
 - Pipeline completo reproducible con un comando: `python -m src.data_pipeline.run_all`.
 
 ## 3. Ingeniería del modelo
@@ -24,7 +25,8 @@ MediWatch sigue el ciclo CRISP-ML(Q) (Cross-Industry Standard Process for Machin
 ## 4. Evaluación
 
 - Backtest temporal en 4 cortes (2024-06 → 2025-11): entrenar hasta el corte, probar en los 3 meses siguientes.
-- Resultados: **AUC promedio 0,787 · precision@20 = 0,988** (`models/predictive/metrics.json`; matriz de confusión y ROC en `reports/figures/`).
+- Resultados: **AUC promedio 0,787 · precision@20 = 0,988** (`models/predictive/metrics.json`). Nota: el AUC de las figuras (`reports/figures/roc.png`, matriz) es el del **último corte** (2025-11, 0,731), no el promedio de los cuatro — son medidas distintas, no una contradicción.
+- **Línea base de contraste:** ordenar por sola frecuencia de solicitudes 12m alcanza un precision@20 equivalente (y AUC comparable), porque la escasez es muy persistente. El modelo se interpreta como validación de que el ranking captura señal real (99% vs 17% de tasa base), no como superioridad sobre reglas simples. Un label más exigente (aumentos/entradas nuevas) queda como trabajo futuro.
 - **Pruebas de equidad** (`tests/bias_tests/`): invarianza al nombre, no supresión de medicamentos huérfanos (un solo solicitante), no alarmismo con poca historia, techo de influencia de la urgencia, distribución real no degenerada.
 
 ## 5. Despliegue
